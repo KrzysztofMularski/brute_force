@@ -5,3 +5,5 @@ trajectories
 *.txt
 !Makefile
 *.pgm
+!100_5ns_trajectory_pdb_map.pgm
+!303_5ns_trajectory_pdb_map.pgm
