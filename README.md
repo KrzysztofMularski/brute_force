@@ -19,3 +19,10 @@ brute_force ./trajectory.pdb -t 10 -i
 ```
 ## Results
 Example result grey maps can be found under directory ![results](/results) in this project.
+
+All maps were generated with 10 omp threads.
+|File name|Max RMSD|Frames pair|The calculation took|
+|---|---|---|---|
+|100_5ns_trajectory_pdb_map.pgm|129.495|(0, 934)|6m 57s|
+|303_5ns_trajectory_pdb_map.pgm|222.681|(101, 876)|19m 6s|
+
