@@ -17,3 +17,5 @@ brute_force ./trajectory.pdb
 ```
 brute_force ./trajectory.pdb -t 10 -i
 ```
+## Results
+Example result grey maps can be found under directory ![results](/results) in this project.
