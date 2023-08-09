@@ -27,6 +27,12 @@ vector<int> sphereCA;
 // List of atoms in [<sphere>]
 vector<vector<int>>* sphereAtoms;
 
+struct {
+    int i = -1;
+    int j = -1;
+    double rmsd = -1;
+} currentBest;
+
 int AllocationsCountGlobal = 0;
 int RMSDCalculationCountGlobal = 0;
 int omp_thread_id;
@@ -43,6 +49,30 @@ struct {
 #pragma omp threadprivate(omp_thread_id, FRAMEONE, FRAMETWO)
 
 typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds> timestamp;
+
+class ProgressBar {
+  public:
+    ProgressBar(int totalSteps) : totalSteps(totalSteps), startTime(std::chrono::steady_clock::now()) {}
+
+    void update(int currentStep) {
+        int progress = (currentStep * 100) / totalSteps;
+        if (progress == 0)
+            return;
+        auto currentTime = std::chrono::steady_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+        int estimatedTotalTime = (elapsedTime * 100) / progress;
+        int estimatedRemainingTime = estimatedTotalTime - elapsedTime;
+
+        std::cout << "[" << std::string(progress / 5,  '#') << std::string((100 - progress) / 5, ' ') << "] " << std::fixed << std::setprecision(2)
+                  << static_cast<double>(progress) << "%"
+                  << " Time left: " << estimatedRemainingTime << "s     \r";
+        std::cout.flush();
+    }
+
+  private:
+    int totalSteps;
+    std::chrono::steady_clock::time_point startTime;
+};
 
 class Progress {
   private:
@@ -95,12 +125,14 @@ class Progress {
 
         timestamp currentTimestamp = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(currentTimestamp - lastTimestamp);
-        lastTimestamp = currentTimestamp;
-        int stepsLeft = allStepsCount - currentSteps;
+        if (elapsed.count() > 5) {
+            lastTimestamp = currentTimestamp;
+            int stepsLeft = allStepsCount - currentSteps;
 
-        timeLeftH = stepsLeft / modulo * elapsed / 1h;
-        timeLeftMin = stepsLeft / modulo * elapsed / 1min;
-        timeLeftSec = stepsLeft / modulo * elapsed / 1s;
+            timeLeftH = stepsLeft / modulo * elapsed / 1h;
+            timeLeftMin = stepsLeft / modulo * elapsed / 1min;
+            timeLeftSec = stepsLeft / modulo * elapsed / 1s;
+        }
         printf("] %.2f%%  %dh:%dm:%ds left   \r", float(currentSteps) / float(allStepsCount) * 100.0, timeLeftH, timeLeftMin % 60, timeLeftSec % 60);
         std::cout.flush();
         currentSteps++;
@@ -136,7 +168,7 @@ void readFile(string filename) {
         }
         myfile1.close();
     } else {
-        cout << "Nie odnaleziono pliku!" << endl;
+        cout << "Cannot find file: " << filename << endl;
         return;
     }
     Progress p1(lines_count);
@@ -176,7 +208,7 @@ void readFile(string filename) {
         myfile.close();
         cout << "File parsed" << endl;
     } else {
-        cout << "Nie odnaleziono pliku!" << endl;
+        cout << "Cannot find file: " << filename << endl;
     }
 }
 
@@ -420,7 +452,7 @@ int main(int argc, char* argv[]) {
     sphereAtoms = new std::vector<std::vector<int>>[config.omp_threads_number];
     cout << "Calculating.." << endl;
 
-    Progress p2(size * size, 100);
+    Progress p2(size * size / config.omp_threads_number, 100);
     auto start = std::chrono::steady_clock::now();
 
 #pragma omp parallel for reduction(+ : AllocationsCountGlobal, RMSDCalculationCountGlobal)
@@ -430,9 +462,18 @@ int main(int argc, char* argv[]) {
         AllocationsCountGlobal++;
         int RMSDCalculationCount = 0;
         for (int j = 0; j < size; j++) {
-            matrix[i][j] = calculateRMSDSuperpose(j);
+            double result = calculateRMSDSuperpose(j);
+            matrix[i][j] = result;
 #pragma omp critical
-            p2.improve();
+            {
+                if (i != j && result > currentBest.rmsd) {
+                    cout << "[New best] [" << i << ", " << j << "] = " << result << endl;
+                    currentBest = { i, j, result };
+                }
+            }
+            if (omp_get_thread_num() == 0) {
+                p2.improve();
+            }
             RMSDCalculationCount++;
         }
         RMSDCalculationCountGlobal += RMSDCalculationCount;

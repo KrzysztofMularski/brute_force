@@ -1,6 +1,7 @@
 CC = clang++ -std=c++17
 CFLAGS = -g -Wall -Wextra -Ofast
-LIBS = -DEIGEN_DONT_PARALLELIZE -fopenmp=libomp
+# LIBS = -DEIGEN_DONT_PARALLELIZE -fopenmp=libomp
+LIBS = -fopenmp=libomp
 
 TARGET = brute_force
 

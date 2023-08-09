@@ -24,5 +24,7 @@ All maps were generated with 10 omp threads.
 |File name|Max RMSD|Frames pair|The calculation took|
 |---|---|---|---|
 |100_5ns_trajectory_pdb_map.pgm|129.495|(0, 934)|6m 57s|
+|100_15ns_trajectory_pdb_map.pgm|106.677|(2912, 709|1h 4m 41s|
 |303_5ns_trajectory_pdb_map.pgm|222.681|(101, 876)|19m 6s|
+|303_15ns_trajectory_pdb_map.pgm|244.776|(0, 2516)|2h 25m 12s|
 
