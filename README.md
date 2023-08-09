@@ -23,8 +23,13 @@ Example result grey maps can be found under directory ![results](/results) in th
 All maps were generated with 10 omp threads.
 |File name|Max RMSD|Frames pair|The calculation took|
 |---|---|---|---|
-|100_5ns_trajectory_pdb_map.pgm|129.495|(0, 934)|6m 57s|
-|100_15ns_trajectory_pdb_map.pgm|106.677|(2912, 709|1h 4m 41s|
+|100_5ns_trajectory_pdb_map.pgm|97.3844|(3, 312)|6m 43s|
+|100_15ns_trajectory_pdb_map.pgm|106.677|(2912, 709)|1h 4m 41s|
 |303_5ns_trajectory_pdb_map.pgm|222.681|(101, 876)|19m 6s|
 |303_15ns_trajectory_pdb_map.pgm|244.776|(0, 2516)|2h 25m 12s|
+
+Other (old):
+|File name|Max RMSD|Frames pair|The calculation took|
+|---|---|---|---|
+|100_5ns_trajectory_no_ignh_pdb_map.pgm|129.495|(0, 934)|6m 57s|
 
